@@ -1,4 +1,6 @@
-# VarConverter
+# PolyMorph
+
+Polymorph – A multi-format file conversion engine.
 
 File converter web app with a React frontend and Node.js (Express) backend.
 

@@ -1,7 +1,8 @@
 {
-  "name": "package.json",
+  "name": "polymorph",
   "private": true,
   "version": "0.0.0",
+  "description": "Polymorph – A multi-format file conversion engine",
   "type": "module",
   "scripts": {
     "dev": "vite",

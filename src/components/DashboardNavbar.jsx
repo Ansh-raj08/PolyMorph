@@ -4,15 +4,17 @@ function DashboardNavbar() {
       <div className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-300 via-sky-500 to-blue-600 p-[1px]">
           <div className="flex h-full w-full items-center justify-center rounded-[11px] bg-slate-950/90 font-display text-sm font-bold text-cyan-100">
-            VC
+            PM
           </div>
         </div>
 
         <div>
           <p className="font-display text-sm uppercase tracking-[0.22em] text-slate-100">
-            VarConverter
+            PolyMorph
           </p>
-          <p className="text-xs text-slate-400">Smart file conversion suite</p>
+          <p className="text-xs text-slate-400">
+            Polymorph – A multi-format file conversion engine
+          </p>
         </div>
       </div>
 
