@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  background:
+    radial-gradient(1200px 500px at 0% -10%, rgba(14, 165, 233, 0.16), transparent 65%),
+    radial-gradient(900px 500px at 100% -20%, rgba(34, 197, 94, 0.14), transparent 60%),
+    linear-gradient(160deg, #030712 0%, #050b17 42%, #070d1c 100%);
+  color: #e2e8f0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+  .glass-panel {
+    @apply border border-slate-200/10 bg-slate-900/45 backdrop-blur-xl shadow-panel;
+  }
+
+  .card-glow {
+    box-shadow:
+      inset 0 0 0 1px rgba(148, 163, 184, 0.1),
+      0 22px 40px -28px rgba(14, 165, 233, 0.55);
+  }
+
+  .card-shell {
+    @apply relative overflow-hidden rounded-2xl border border-slate-200/10 bg-slate-900/40 p-5 text-left transition duration-300;
+  }
+
+  .card-shell:hover {
+    @apply -translate-y-1 border-cyan-300/35 bg-slate-900/65;
+    box-shadow:
+      inset 0 0 0 1px rgba(125, 211, 252, 0.14),
+      0 24px 40px -28px rgba(56, 189, 248, 0.55);
+  }
+
+  .ambient-dot {
+    @apply pointer-events-none absolute rounded-full blur-3xl;
+  }
+}
