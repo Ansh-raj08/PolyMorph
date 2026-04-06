@@ -5,7 +5,14 @@ import {
 } from '../services/libreOfficeConverter.js'
 
 const uploadSingleFile = (req, res) => {
+  const requestId = req.requestId || 'n/a'
+
+  console.info(`[Request ${requestId}] Upload controller started`, {
+    hasFile: Boolean(req.file),
+  })
+
   if (!req.file) {
+    console.warn(`[Request ${requestId}] Upload failed - no file in request`)
     return res
       .status(400)
       .json({ message: 'No file uploaded. Use form-data key "file".' })
@@ -14,7 +21,7 @@ const uploadSingleFile = (req, res) => {
   const absoluteFilePath = path.resolve(req.file.path)
   const filePath = path.join('uploads', req.file.filename).replace(/\\/g, '/')
 
-  console.info('[Upload] File stored successfully.', {
+  console.info(`[Request ${requestId}] File received`, {
     originalName: req.file.originalname,
     storedFileName: req.file.filename,
     mimeType: req.file.mimetype,
@@ -31,7 +38,14 @@ const uploadSingleFile = (req, res) => {
 }
 
 const convertUploadedFile = async (req, res, next) => {
+  const requestId = req.requestId || 'n/a'
+
+  console.info(`[Request ${requestId}] Conversion controller started`, {
+    hasFile: Boolean(req.file),
+  })
+
   if (!req.file) {
+    console.warn(`[Request ${requestId}] Conversion failed - no file in request`)
     return res
       .status(400)
       .json({ message: 'No file uploaded. Use form-data key "file".' })
@@ -39,7 +53,7 @@ const convertUploadedFile = async (req, res, next) => {
 
   const absoluteSourcePath = path.resolve(req.file.path)
 
-  console.info('[Upload] Conversion request received.', {
+  console.info(`[Request ${requestId}] File received for conversion`, {
     originalName: req.file.originalname,
     storedFileName: req.file.filename,
     mimeType: req.file.mimetype,
@@ -48,6 +62,11 @@ const convertUploadedFile = async (req, res, next) => {
   })
 
   try {
+    console.info(`[Request ${requestId}] Conversion started`, {
+      sourceOriginalName: req.file.originalname,
+      absoluteSourcePath,
+    })
+
     const validatedFile = await validateUploadedFileForConversion({
       sourceFilePath: absoluteSourcePath,
       sourceOriginalName: req.file.originalname,
@@ -66,7 +85,7 @@ const convertUploadedFile = async (req, res, next) => {
       .join('uploads', req.file.filename)
       .replace(/\\/g, '/')
 
-    console.info('[Upload] Conversion completed.', {
+    console.info(`[Request ${requestId}] Conversion finished`, {
       sourceFilePath,
       convertedFilePath: convertedFile.filePath,
       sourceSize: validatedFile.actualFileSize,
@@ -83,6 +102,13 @@ const convertUploadedFile = async (req, res, next) => {
       convertedFile,
     })
   } catch (error) {
+    console.error(`[Request ${requestId}] Conversion failed`, {
+      message: error.message,
+      stack: error.stack,
+      originalName: req.file?.originalname,
+      storedFileName: req.file?.filename,
+    })
+
     return next(error)
   }
 }

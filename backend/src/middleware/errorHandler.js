@@ -6,9 +6,19 @@ const notFoundHandler = (req, res) => {
     .json({ message: `Route ${req.method} ${req.originalUrl} not found.` })
 }
 
-const errorHandler = (error, _req, res, next) => {
-  // Keep Express error middleware signature while satisfying lint rules.
-  void next
+const errorHandler = (error, req, res, next) => {
+  if (res.headersSent) {
+    return next(error)
+  }
+
+  console.error(`[Request ${req.requestId || 'n/a'}] Error handler caught error`, {
+    method: req.method,
+    path: req.originalUrl,
+    name: error.name,
+    message: error.message,
+    statusCode: error.statusCode || 500,
+    stack: error.stack,
+  })
 
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {

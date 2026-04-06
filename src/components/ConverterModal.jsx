@@ -1,5 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '')
+const SUPPORTED_CONVERSION_IDS = new Set(['pdf-word', 'word-pdf'])
+const CONVERSION_TIMEOUT_MS = 180000
+const DOWNLOAD_TIMEOUT_MS = 60000
+
+const createTimeoutController = (timeoutMs) => {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  return { controller, timeoutId }
+}
+
+const clearRequestTimeout = (timeoutId) => {
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+  }
+}
+
+const toReadableFetchError = (error, actionLabel) => {
+  if (error && typeof error === 'object' && error.name === 'AbortError') {
+    return `${actionLabel} timed out. Please try again with a smaller file.`
+  }
+
+  if (error instanceof TypeError) {
+    return `Load Failed: unable to reach ${API_BASE_URL}. Check that the backend is running and FRONTEND_ORIGIN allows your frontend URL.`
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return `${actionLabel} failed unexpectedly.`
+}
+
 const formatBytes = (bytes) => {
   if (!bytes) {
     return '0 Bytes'
@@ -17,15 +51,27 @@ const toOutputFileName = (fileName, extension) => {
   return `${nameWithoutExtension}.${extension}`
 }
 
+const toAbsoluteApiUrl = (relativePath) => {
+  const cleanPath = String(relativePath || '').replace(/^\/+/, '')
+  return `${API_BASE_URL}/${cleanPath}`
+}
+
 function ConverterModal({ conversion, onClose }) {
   const [selectedFile, setSelectedFile] = useState(null)
+  const [convertedFile, setConvertedFile] = useState(null)
   const [dragActive, setDragActive] = useState(false)
   const [progress, setProgress] = useState(0)
   const [isConverting, setIsConverting] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
   const [isConverted, setIsConverted] = useState(false)
+  const [conversionError, setConversionError] = useState('')
 
   const timerRef = useRef(null)
   const inputRef = useRef(null)
+
+  const isSupportedConversion = conversion
+    ? SUPPORTED_CONVERSION_IDS.has(conversion.id)
+    : false
 
   useEffect(() => {
     return () => {
@@ -54,12 +100,16 @@ function ConverterModal({ conversion, onClose }) {
   }, [conversion, onClose])
 
   const outputFileName = useMemo(() => {
+    if (convertedFile?.fileName) {
+      return convertedFile.fileName
+    }
+
     if (!selectedFile || !conversion) {
       return ''
     }
 
     return toOutputFileName(selectedFile.name, conversion.outputExtension)
-  }, [selectedFile, conversion])
+  }, [selectedFile, conversion, convertedFile])
 
   const applyFile = (file) => {
     if (!file) {
@@ -72,9 +122,11 @@ function ConverterModal({ conversion, onClose }) {
     }
 
     setSelectedFile(file)
+    setConvertedFile(null)
     setProgress(0)
     setIsConverting(false)
     setIsConverted(false)
+    setConversionError('')
   }
 
   const handleInputChange = (event) => {
@@ -106,51 +158,155 @@ function ConverterModal({ conversion, onClose }) {
     }
   }
 
-  const startConversion = () => {
+  const startConversion = async () => {
     if (!selectedFile || isConverting || isConverted) {
       return
     }
 
+    if (!isSupportedConversion) {
+      setConversionError('Only PDF -> Word and Word -> PDF are currently available.')
+      return
+    }
+
     setIsConverting(true)
+    setIsConverted(false)
+    setConvertedFile(null)
+    setConversionError('')
     setProgress(6)
 
     timerRef.current = setInterval(() => {
       setProgress((currentProgress) => {
-        const nextValue = Math.min(
-          currentProgress + Math.floor(Math.random() * 14 + 8),
-          100,
-        )
-
-        if (nextValue >= 100) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current)
-            timerRef.current = null
-          }
-
-          setIsConverting(false)
-          setIsConverted(true)
-        }
-
-        return nextValue
+        return Math.min(currentProgress + Math.floor(Math.random() * 8 + 4), 92)
       })
     }, 320)
+
+    try {
+      const conversionUrl = `${API_BASE_URL}/upload/convert`
+      const formData = new FormData()
+      formData.append('file', selectedFile)
+
+      console.info('[Frontend] Conversion request received from UI', {
+        conversionId: conversion.id,
+        url: conversionUrl,
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        fileType: selectedFile.type,
+      })
+
+      const { controller, timeoutId } = createTimeoutController(CONVERSION_TIMEOUT_MS)
+      let response
+
+      try {
+        // Do not set Content-Type manually for FormData.
+        response = await fetch(conversionUrl, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        })
+      } finally {
+        clearRequestTimeout(timeoutId)
+      }
+
+      console.info('[Frontend] Conversion response received', {
+        status: response.status,
+        ok: response.ok,
+      })
+
+      const responseContentType = response.headers.get('content-type') || ''
+      let responseData = null
+
+      if (responseContentType.includes('application/json')) {
+        try {
+          responseData = await response.json()
+        } catch {
+          responseData = null
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData?.message || 'Conversion failed on the server.')
+      }
+
+      const convertedFilePayload = responseData?.convertedFile
+      if (!convertedFilePayload?.filePath || !convertedFilePayload?.fileName) {
+        throw new Error('Conversion succeeded but response is missing output file details.')
+      }
+
+      setConvertedFile({
+        ...convertedFilePayload,
+        downloadUrl: toAbsoluteApiUrl(convertedFilePayload.filePath),
+      })
+
+      console.info('[Frontend] Conversion finished', {
+        convertedFileName: convertedFilePayload.fileName,
+        convertedFilePath: convertedFilePayload.filePath,
+      })
+
+      setProgress(100)
+      setIsConverted(true)
+    } catch (error) {
+      console.error('[Frontend] Conversion request failed', error)
+      setProgress(0)
+      setIsConverted(false)
+      setConversionError(toReadableFetchError(error, 'Conversion request'))
+    } finally {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+
+      setIsConverting(false)
+    }
   }
 
-  const downloadConvertedFile = () => {
-    if (!selectedFile || !isConverted || !conversion) {
+  const downloadConvertedFile = async () => {
+    if (!isConverted || !convertedFile?.downloadUrl) {
       return
     }
 
-    const url = URL.createObjectURL(selectedFile)
-    const link = document.createElement('a')
+    setIsDownloading(true)
 
-    link.href = url
-    link.download = outputFileName
-    document.body.append(link)
-    link.click()
-    link.remove()
+    try {
+      console.info('[Frontend] Download request started', {
+        url: convertedFile.downloadUrl,
+        expectedFileName: outputFileName,
+      })
 
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
+      const { controller, timeoutId } = createTimeoutController(DOWNLOAD_TIMEOUT_MS)
+      let response
+
+      try {
+        response = await fetch(convertedFile.downloadUrl, {
+          signal: controller.signal,
+        })
+      } finally {
+        clearRequestTimeout(timeoutId)
+      }
+
+      if (!response.ok) {
+        throw new Error('Unable to download converted file from server.')
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+
+      link.href = url
+      link.download = outputFileName || 'converted-file'
+      document.body.append(link)
+      link.click()
+      link.remove()
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+      console.info('[Frontend] Download finished', {
+        fileName: outputFileName,
+      })
+    } catch (error) {
+      console.error('[Frontend] Download failed', error)
+      setConversionError(toReadableFetchError(error, 'Download request'))
+    } finally {
+      setIsDownloading(false)
+    }
   }
 
   if (!conversion) {
@@ -183,6 +339,12 @@ function ConverterModal({ conversion, onClose }) {
             <p className="mt-1 text-sm text-slate-300/80">
               Accepted file types: {conversion.accepts}
             </p>
+            {!isSupportedConversion && (
+              <p className="mt-2 text-sm text-amber-200/90">
+                This converter card is UI-only right now. Live backend conversion currently supports
+                PDF -&gt; Word and Word -&gt; PDF.
+              </p>
+            )}
           </div>
 
           <button
@@ -214,6 +376,7 @@ function ConverterModal({ conversion, onClose }) {
           <input
             ref={inputRef}
             type="file"
+            accept={conversion.accepts}
             className="hidden"
             onChange={handleInputChange}
           />
@@ -244,14 +407,22 @@ function ConverterModal({ conversion, onClose }) {
 
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${
-                  isConverted
+                  conversionError
+                    ? 'border border-rose-300/35 bg-rose-400/15 text-rose-100'
+                    : isConverted
                     ? 'border border-emerald-300/35 bg-emerald-400/15 text-emerald-100'
                     : isConverting
                       ? 'border border-cyan-300/35 bg-cyan-400/15 text-cyan-100'
                       : 'border border-slate-300/25 bg-slate-400/10 text-slate-300'
                 }`}
               >
-                {isConverted ? 'Ready' : isConverting ? 'Converting' : 'Queued'}
+                {conversionError
+                  ? 'Failed'
+                  : isConverted
+                    ? 'Ready'
+                    : isConverting
+                      ? 'Converting'
+                      : 'Queued'}
               </span>
             </div>
           </div>
@@ -271,21 +442,29 @@ function ConverterModal({ conversion, onClose }) {
           </div>
 
           <p className="mt-2 text-xs text-slate-400">
-            {isConverted
-              ? `Conversion complete. Output ready as ${outputFileName}.`
-              : isConverting
-                ? 'Converting your file now.'
-                : 'Upload a file and press Convert to start.'}
+            {conversionError
+              ? `Conversion failed: ${conversionError}`
+              : isConverted
+                ? `Conversion complete. Output ready as ${outputFileName}.`
+                : isConverting
+                  ? 'Converting your file now.'
+                  : 'Upload a file and press Convert to start.'}
           </p>
         </div>
+
+        {conversionError && (
+          <div className="mt-4 rounded-xl border border-rose-300/35 bg-rose-500/10 p-3 text-sm text-rose-100">
+            {conversionError}
+          </div>
+        )}
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <button
             type="button"
             onClick={startConversion}
-            disabled={!selectedFile || isConverting || isConverted}
+            disabled={!selectedFile || isConverting || isConverted || !isSupportedConversion}
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-              !selectedFile || isConverting || isConverted
+              !selectedFile || isConverting || isConverted || !isSupportedConversion
                 ? 'cursor-not-allowed bg-slate-700/70 text-slate-300'
                 : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-slate-950 hover:brightness-110'
             }`}
@@ -296,14 +475,14 @@ function ConverterModal({ conversion, onClose }) {
           <button
             type="button"
             onClick={downloadConvertedFile}
-            disabled={!isConverted}
+            disabled={!isConverted || isDownloading}
             className={`rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${
-              isConverted
+              isConverted && !isDownloading
                 ? 'border-emerald-300/35 bg-emerald-400/15 text-emerald-100 hover:bg-emerald-400/25'
                 : 'cursor-not-allowed border-slate-300/20 bg-slate-800/60 text-slate-400'
             }`}
           >
-            Download
+            {isDownloading ? 'Downloading...' : 'Download'}
           </button>
         </div>
       </section>

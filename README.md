@@ -4,7 +4,12 @@ Polymorph – A multi-format file conversion engine.
 
 File converter web app with a React frontend and Node.js (Express) backend.
 
-Last Updated: 2026-04-05
+Current Version: PolyMorph V-1.0.0
+Last Updated: 2026-04-06
+
+## Release Notes
+
+- See [CHANGELOG.md](CHANGELOG.md) for full V-1.0.0 release details.
 
 ## Tech Stack
 
@@ -12,7 +17,7 @@ Last Updated: 2026-04-05
 - Backend: Node.js, Express, Multer
 - Conversion Engine: LibreOffice CLI (soffice --headless)
 
-## Current Progress (2026-04-05)
+## Current Progress (2026-04-06)
 
 ### Frontend
 
@@ -21,6 +26,9 @@ Last Updated: 2026-04-05
 - Added interactive conversion cards
 - Added conversion modal with drag and drop upload, file preview, progress bar, and download state
 - Added upload integration example using FormData and API error/success handling
+- Wired conversion modal to backend POST /upload/convert
+- Added real converted file download from backend outputs
+- Added frontend request timeout and clearer "Load Failed" diagnostics
 
 ### Backend
 
@@ -30,6 +38,9 @@ Last Updated: 2026-04-05
 - Added controller and route structure
 - Added upload endpoint: POST /upload
 - Added conversion endpoint: POST /upload/convert
+- Added diagnostics endpoint: GET /debug/status
+- Added static serving for converted files: /outputs/*
+- Added request lifecycle logging with request IDs
 
 ### Conversion (PDF <-> Word)
 
@@ -61,6 +72,7 @@ Last Updated: 2026-04-05
 	- Existence checks
 	- LibreOffice command execution
 	- stdout/stderr output from soffice
+	- Request received, route hit, conversion start/finish, and error traces
 
 ## Notes
 
@@ -86,6 +98,6 @@ Use .env values similar to:
 
 ## Next Planned Steps
 
-- Add direct frontend wiring from conversion modal to POST /upload/convert
-- Add download endpoint/served static outputs for converted files
-- Add automated API tests for upload and conversion validation paths
+- Add automated integration tests for upload, conversion, and download flows
+- Expand backend conversion support for additional UI conversion categories
+- Add queueing and progress streaming for large files

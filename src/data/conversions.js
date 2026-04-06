@@ -32,7 +32,7 @@ export const conversionCatalog = [
     from: 'Word',
     to: 'PDF',
     description: 'Preserve typography and spacing for easy sharing.',
-    accepts: '.doc,.docx',
+    accepts: '.docx',
     outputExtension: 'pdf',
   },
   {
