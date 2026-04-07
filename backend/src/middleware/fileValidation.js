@@ -47,6 +47,28 @@ const readFileHeader = async (filePath, bytesToRead = 16) => {
   }
 }
 
+const detectLikelyScannedPdf = async (filePath) => {
+  const handle = await fs.open(filePath, 'r')
+
+  try {
+    const maxBytesToRead = 256 * 1024
+    const buffer = Buffer.alloc(maxBytesToRead)
+    const { bytesRead } = await handle.read(buffer, 0, maxBytesToRead, 0)
+    const content = buffer.subarray(0, bytesRead).toString('latin1')
+
+    const hasTextMarkers = /\/Font|BT|Tj|TJ|ToUnicode/.test(content)
+    const hasImageMarkers = /\/Image|\/XObject/.test(content)
+
+    return {
+      likelyScanned: hasImageMarkers && !hasTextMarkers,
+      hasTextMarkers,
+      hasImageMarkers,
+    }
+  } finally {
+    await handle.close()
+  }
+}
+
 const verifyFileSignature = (headerBuffer, extension) => {
   const sig = FILE_SIGNATURES[extension]
   if (!sig) return { valid: false, reason: `Unknown extension: ${extension}` }
@@ -180,6 +202,18 @@ const validateFileIntegrity = async (req, res, next) => {
         `File content does not match ${extension} format. ${signatureCheck.reason}. ${actualType ? `Detected type: ${actualType}` : 'Unknown file type.'}`,
         debugInfo,
       ))
+    }
+
+    // Step 6.5: Best-effort scanned PDF detection (warning only, no hard reject)
+    if (extension === '.pdf') {
+      const pdfScanCheck = await detectLikelyScannedPdf(absolutePath)
+      debugInfo.pdfLikelyScanned = pdfScanCheck.likelyScanned
+      debugInfo.pdfHasTextMarkers = pdfScanCheck.hasTextMarkers
+      debugInfo.pdfHasImageMarkers = pdfScanCheck.hasImageMarkers
+
+      if (pdfScanCheck.likelyScanned) {
+        console.warn('[FileValidation] PDF appears scanned/image-based', debugInfo)
+      }
     }
 
     // Step 7: For OpenXML files, verify basic package structure

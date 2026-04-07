@@ -26,7 +26,10 @@ const conversionByExtension = {
     to: 'Word',
     outputExtension: '.docx',
     convertToArgs: ['docx:"MS Word 2007 XML"', 'docx'],
+    inputFilterArgs: ['--infilter="writer_pdf_import"'],
     availability: 'limited',
+    limitedWarning:
+      'This conversion works best for simple text-based PDFs. Complex or scanned files may fail.',
     allowedMimeTypes: ['application/pdf'],
   },
   '.docx': {
@@ -279,7 +282,7 @@ const validateUploadedFileForConversion = async ({
   if (fileStats.size < MIN_CONVERSION_FILE_SIZE_BYTES) {
     throw createHttpError(
       400,
-      `Uploaded file is too small to be a valid PDF or DOCX (minimum ${MIN_CONVERSION_FILE_SIZE_BYTES} bytes).`,
+      `Uploaded file is too small to process (minimum ${MIN_CONVERSION_FILE_SIZE_BYTES} bytes).`,
     )
   }
 
@@ -489,6 +492,7 @@ const convertFileWithLibreOffice = async ({
         '--invisible',
         '--nologo',
         '--nofirststartwizard',
+        ...(conversionPlan.inputFilterArgs || []),
         '--convert-to',
         convertToArg,
         '--outdir',

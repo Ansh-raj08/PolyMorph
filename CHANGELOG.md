@@ -22,6 +22,14 @@
 - UX update
   - Unsupported cards now use blur and overlay treatment, disable click interaction, and preserve the dark card layout.
 
+### Stability & Deployment Improvements
+- Fixed localhost deployment issue by moving frontend API routing to environment-based configuration.
+- Added VITE_API_URL-driven backend targeting for deployed environments.
+- Improved CORS handling with secure origin checks for production and localhost support for development.
+- Added stronger file validation and integrity checks before conversion.
+- Restricted exposed conversion features to stable conversions and marked others as Coming Soon.
+- Improved centralized error handling, request tracing, and conversion diagnostics to prevent hanging/crash scenarios.
+
 ### Progress Completed
 - Frontend
   - Connected conversion modal to POST /upload/convert.
@@ -71,11 +79,15 @@
 - Frontend production build verified with Vite.
 
 ### Current Supported Conversions
-- PDF -> Word (.docx)
 - Word (.docx) -> PDF
+- Excel (.xlsx) -> PDF
+- PowerPoint (.pptx) -> PDF
+
+### Limited Conversions
+- PDF -> Word (.docx) (best effort)
 
 ### Known Scope for V-1.0.0
-- Converter cards outside PDF <-> Word are currently UI placeholders and not wired to backend conversion engines.
+- Converter cards outside stable and limited conversion set are currently UI placeholders and not wired to backend conversion engines.
 
 ### Post V-1.0.0 Roadmap
 - Add automated integration tests for upload, conversion, and download flows.

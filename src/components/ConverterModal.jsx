@@ -5,7 +5,7 @@ import {
 } from '../data/conversions'
 
 const API_BASE_URL =
-  (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '')
+  (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
 const CONVERSION_TIMEOUT_MS = 180000
 const DOWNLOAD_TIMEOUT_MS = 60000
 
@@ -27,7 +27,7 @@ const toReadableFetchError = (error, actionLabel) => {
   }
 
   if (error instanceof TypeError) {
-    return `Load Failed: unable to reach ${API_BASE_URL}. Check that the backend is running and FRONTEND_ORIGIN allows your frontend URL.`
+    return 'Load Failed: unable to reach configured backend URL. Check VITE_API_URL and backend FRONTEND_ORIGIN/CORS settings.'
   }
 
   if (error instanceof Error) {
@@ -56,6 +56,10 @@ const toOutputFileName = (fileName, extension) => {
 
 const toAbsoluteApiUrl = (relativePath) => {
   const cleanPath = String(relativePath || '').replace(/^\/+/, '')
+  if (!API_BASE_URL) {
+    return `/${cleanPath}`
+  }
+
   return `${API_BASE_URL}/${cleanPath}`
 }
 
@@ -68,6 +72,7 @@ function ConverterModal({ conversion, onClose }) {
   const [isDownloading, setIsDownloading] = useState(false)
   const [isConverted, setIsConverted] = useState(false)
   const [conversionError, setConversionError] = useState('')
+  const [conversionWarnings, setConversionWarnings] = useState([])
 
   const timerRef = useRef(null)
   const inputRef = useRef(null)
@@ -134,6 +139,7 @@ function ConverterModal({ conversion, onClose }) {
     setIsConverting(false)
     setIsConverted(false)
     setConversionError('')
+    setConversionWarnings([])
   }
 
   const handleInputChange = (event) => {
@@ -175,10 +181,16 @@ function ConverterModal({ conversion, onClose }) {
       return
     }
 
+    if (!API_BASE_URL) {
+      setConversionError('VITE_API_URL is not configured. Set it before using conversions.')
+      return
+    }
+
     setIsConverting(true)
     setIsConverted(false)
     setConvertedFile(null)
     setConversionError('')
+    setConversionWarnings([])
     setProgress(6)
 
     timerRef.current = setInterval(() => {
@@ -238,6 +250,12 @@ function ConverterModal({ conversion, onClose }) {
       if (!convertedFilePayload?.filePath || !convertedFilePayload?.fileName) {
         throw new Error('Conversion succeeded but response is missing output file details.')
       }
+
+      const warnings = Array.isArray(responseData?.warnings)
+        ? responseData.warnings.filter(Boolean)
+        : []
+
+      setConversionWarnings(warnings)
 
       setConvertedFile({
         ...convertedFilePayload,
@@ -462,6 +480,17 @@ function ConverterModal({ conversion, onClose }) {
           <div className="mt-4 rounded-xl border border-amber-300/35 bg-amber-500/12 p-3 text-sm text-amber-100">
             {conversion.limitedWarning ||
               'This conversion works best for simple text-based PDFs. Complex or scanned files may fail.'}
+          </div>
+        )}
+
+        {conversionWarnings.length > 0 && (
+          <div className="mt-4 rounded-xl border border-amber-300/35 bg-amber-500/10 p-3 text-sm text-amber-100">
+            <p className="font-semibold">Warnings</p>
+            <ul className="mt-1 list-disc pl-5">
+              {conversionWarnings.map((warning) => (
+                <li key={warning}>{warning}</li>
+              ))}
+            </ul>
           </div>
         )}
 

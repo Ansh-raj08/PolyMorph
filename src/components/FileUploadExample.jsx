@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'
+  import.meta.env.VITE_API_URL || ''
 
 function FileUploadExample() {
   const [selectedFile, setSelectedFile] = useState(null)
@@ -21,6 +21,11 @@ function FileUploadExample() {
 
     if (!selectedFile) {
       setErrorMessage('Please select a file first.')
+      return
+    }
+
+    if (!API_BASE_URL) {
+      setErrorMessage('VITE_API_URL is not configured. Set it in your frontend environment.')
       return
     }
 
@@ -61,7 +66,7 @@ function FileUploadExample() {
       <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
         <input
           type="file"
-          accept=".pdf,.docx"
+          accept=".pdf,.docx,.xlsx,.pptx"
           onChange={handleFileChange}
           className="rounded-lg border border-slate-300/25 bg-slate-900/70 px-3 py-2 text-sm text-slate-100"
         />

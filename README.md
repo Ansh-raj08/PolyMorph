@@ -29,6 +29,8 @@ Last Updated: 2026-04-06
 - Wired conversion modal to backend POST /upload/convert
 - Added real converted file download from backend outputs
 - Added frontend request timeout and clearer "Load Failed" diagnostics
+- Added environment-based API routing using VITE_API_URL
+- Added clear feature boundaries in UI (Supported, Limited, Coming Soon)
 
 ### Backend
 
@@ -41,19 +43,25 @@ Last Updated: 2026-04-06
 - Added diagnostics endpoint: GET /debug/status
 - Added static serving for converted files: /outputs/*
 - Added request lifecycle logging with request IDs
+- Added secure CORS origin controls for production + localhost in development
+- Added automatic file cleanup service for /uploads and /outputs
 
-### Conversion (PDF <-> Word)
+### Conversion Availability
 
 - Added async conversion flow with child_process.exec (non-blocking)
 - Added LibreOffice conversion service using soffice --headless
 - Stores converted output in outputs folder with unique names
-- Supports:
-	- PDF -> Word (.docx)
+- Stable:
 	- Word (.docx) -> PDF
+	- Excel (.xlsx) -> PDF
+	- PowerPoint (.pptx) -> PDF
+- Limited (best effort):
+	- PDF -> Word (.docx)
+- All other conversion cards are disabled as Coming Soon.
 
 ### Validation and Security Hardening
 
-- Restricted accepted upload types to pdf and docx for conversion flow
+- Restricted accepted upload types to pdf/docx/xlsx/pptx for active conversion flow
 - MIME type validation before conversion
 - File extension validation before conversion
 - File integrity checks before conversion:
@@ -61,7 +69,9 @@ Last Updated: 2026-04-06
 	- Minimum file size threshold
 	- Header signature checks
 		- PDF must start with %PDF-
-		- DOCX must have ZIP signature
+		- DOCX/XLSX/PPTX must have ZIP signature
+	- Basic OpenXML structure checks for DOCX/XLSX/PPTX
+	- Best-effort scanned PDF detection warning
 - Added clear error responses for unsupported/invalid files
 
 ### Debugging and Observability
@@ -72,7 +82,17 @@ Last Updated: 2026-04-06
 	- Existence checks
 	- LibreOffice command execution
 	- stdout/stderr output from soffice
+	- Command-level conversion attempts and failure metadata
 	- Request received, route hit, conversion start/finish, and error traces
+
+### Cleanup and Retention
+
+- Automatic cleanup job removes stale files from:
+	- uploads/
+	- outputs/
+- Default retention: 15 minutes
+- Default sweep interval: 5 minutes
+- Configurable via FILE_TTL_MS and FILE_CLEANUP_INTERVAL_MS
 
 ## Notes
 
@@ -93,8 +113,60 @@ Last Updated: 2026-04-06
 Use .env values similar to:
 
 - PORT=4000
-- FRONTEND_ORIGIN=http://localhost:5173
-- VITE_API_BASE_URL=http://localhost:4000
+- NODE_ENV=development
+- FRONTEND_ORIGIN=http://localhost:5173,https://your-polymorph.vercel.app
+- CORS_ALLOWED_ORIGINS=
+- VITE_API_URL=http://localhost:4000
+- FILE_TTL_MS=900000
+- FILE_CLEANUP_INTERVAL_MS=300000
+- REQUEST_TIMEOUT_MS=240000
+
+## Deployment (Vercel + Railway/Render)
+
+### Frontend (Vercel)
+
+1. Deploy frontend from this repo to Vercel.
+2. Set frontend environment variable in Vercel:
+	- VITE_API_URL=https://your-backend-domain
+3. Re-deploy frontend after setting env values.
+
+### Backend (Railway/Render)
+
+1. Deploy backend as a separate Node service (same repo, backend runtime).
+2. Set backend environment variables:
+	- PORT=4000
+	- NODE_ENV=production
+	- FRONTEND_ORIGIN=https://your-polymorph.vercel.app
+	- FILE_TTL_MS=900000
+	- FILE_CLEANUP_INTERVAL_MS=300000
+3. Ensure LibreOffice is available in the backend runtime.
+
+### Local Backend Testing with Ngrok
+
+1. Run backend locally: npm run server
+2. Start ngrok tunnel: ngrok http 4000
+3. Copy generated https URL (example: https://abc123.ngrok-free.app)
+4. Set frontend env for test session:
+	- VITE_API_URL=https://abc123.ngrok-free.app
+5. If needed, add your frontend origin to backend FRONTEND_ORIGIN.
+
+## Debugging Checklist
+
+- Check backend reachability:
+	- GET /health returns status ok
+- Check dependency readiness:
+	- GET /debug/status reports LibreOffice installed
+- Confirm frontend API target:
+	- VITE_API_URL points to deployed backend (not localhost in production)
+- Confirm CORS:
+	- FRONTEND_ORIGIN includes your active frontend origin
+- Check upload integrity:
+	- Uploaded file exists, non-zero size, valid signature
+- Check conversion logs:
+	- Request received
+	- File uploaded
+	- Conversion started
+	- Conversion finished or failed with detailed message
 
 ## Next Planned Steps
 

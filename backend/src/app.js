@@ -7,14 +7,28 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js'
 import { verifyLibreOfficeInstallation } from './services/libreOfficeConverter.js'
 
 const app = express()
-const configuredFrontendOrigins = (
-  process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+const parseOriginList = (value = '') =>
+  value
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+const configuredFrontendOrigins = parseOriginList(
+  [process.env.FRONTEND_ORIGIN, process.env.CORS_ALLOWED_ORIGINS]
+    .filter(Boolean)
+    .join(','),
 )
-  .split(',')
-  .map((origin) => origin.trim())
-  .filter(Boolean)
+const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS) || 240000
+
+const isProduction = process.env.NODE_ENV === 'production'
 
 const localhostOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i
+
+if (isProduction && configuredFrontendOrigins.length === 0) {
+  console.warn(
+    '[CORS] No FRONTEND_ORIGIN/CORS_ALLOWED_ORIGINS configured in production. Cross-origin browser requests will be blocked.',
+  )
+}
 
 const isAllowedOrigin = (origin) => {
   if (!origin) {
@@ -25,7 +39,11 @@ const isAllowedOrigin = (origin) => {
     return true
   }
 
-  return localhostOriginPattern.test(origin)
+  if (!isProduction && localhostOriginPattern.test(origin)) {
+    return true
+  }
+
+  return false
 }
 
 app.use((req, res, next) => {
@@ -74,6 +92,21 @@ app.use(
 )
 
 app.use(express.json())
+
+app.use((req, res, next) => {
+  res.setTimeout(REQUEST_TIMEOUT_MS, () => {
+    console.error(`[Request ${req.requestId}] Request timed out.`, {
+      path: req.originalUrl,
+      timeoutMs: REQUEST_TIMEOUT_MS,
+    })
+
+    if (!res.headersSent) {
+      res.status(504).json({ message: 'Request timed out. Please try again.' })
+    }
+  })
+
+  next()
+})
 
 // Serve converted files for download.
 app.use('/outputs', express.static(path.resolve(process.cwd(), 'outputs')))
