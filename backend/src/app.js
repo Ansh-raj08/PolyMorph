@@ -101,8 +101,19 @@ app.get('/debug/status', async (_req, res) => {
       outputs: 'outputs/',
     },
     supportedConversions: [
-      { from: 'PDF', to: 'Word (DOCX)' },
       { from: 'Word (DOCX)', to: 'PDF' },
+      { from: 'Excel (XLSX)', to: 'PDF' },
+      { from: 'PowerPoint (PPTX)', to: 'PDF' },
+    ],
+    limitedConversions: [
+      {
+        from: 'PDF',
+        to: 'Word (DOCX)',
+        note: 'Best effort for text-based PDFs; scanned/complex PDFs may fail.',
+      },
+    ],
+    upcomingConversions: [
+      'Image, audio, and video conversions shown in UI as Coming Soon',
     ],
   })
 })

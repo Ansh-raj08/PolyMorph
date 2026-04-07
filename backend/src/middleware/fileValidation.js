@@ -18,6 +18,22 @@ const FILE_SIGNATURES = {
     description: 'ZIP/DOCX header (PK\\x03\\x04)',
     minSize: 2048, // Minimum realistic DOCX
   },
+  '.xlsx': {
+    magic: Buffer.from([0x50, 0x4b, 0x03, 0x04]),
+    description: 'ZIP/XLSX header (PK\\x03\\x04)',
+    minSize: 1024,
+  },
+  '.pptx': {
+    magic: Buffer.from([0x50, 0x4b, 0x03, 0x04]),
+    description: 'ZIP/PPTX header (PK\\x03\\x04)',
+    minSize: 1024,
+  },
+}
+
+const OPEN_XML_STRUCTURE_MARKERS = {
+  '.docx': ['[Content_Types]', 'word/'],
+  '.xlsx': ['[Content_Types]', 'xl/'],
+  '.pptx': ['[Content_Types]', 'ppt/'],
 }
 
 const readFileHeader = async (filePath, bytesToRead = 16) => {
@@ -166,16 +182,16 @@ const validateFileIntegrity = async (req, res, next) => {
       ))
     }
 
-    // Step 7: For DOCX, verify it's a valid ZIP with expected structure
-    if (extension === '.docx') {
-      const zipValid = await verifyDocxStructure(absolutePath)
-      debugInfo.docxStructureValid = zipValid.valid
+    // Step 7: For OpenXML files, verify basic package structure
+    if (OPEN_XML_STRUCTURE_MARKERS[extension]) {
+      const packageCheck = await verifyOpenXmlStructure(absolutePath, extension)
+      debugInfo.openXmlStructureValid = packageCheck.valid
 
-      if (!zipValid.valid) {
-        debugInfo.error = zipValid.reason
-        console.error('[FileValidation] FAILED: Invalid DOCX structure', debugInfo)
+      if (!packageCheck.valid) {
+        debugInfo.error = packageCheck.reason
+        console.error('[FileValidation] FAILED: Invalid OpenXML structure', debugInfo)
         return next(createValidationError(
-          `Invalid DOCX file: ${zipValid.reason}`,
+          `Invalid ${extension.slice(1).toUpperCase()} file: ${packageCheck.reason}`,
           debugInfo,
         ))
       }
@@ -232,22 +248,26 @@ const identifyFileType = (headerBuffer) => {
 }
 
 /**
- * Verify DOCX internal structure (it's a ZIP with specific files)
+ * Verify OpenXML internal structure (DOCX/XLSX/PPTX are ZIP packages)
  */
-const verifyDocxStructure = async (filePath) => {
+const verifyOpenXmlStructure = async (filePath, extension) => {
+  const markers = OPEN_XML_STRUCTURE_MARKERS[extension]
+  if (!markers) {
+    return { valid: true }
+  }
+
   try {
-    // Read enough to check for [Content_Types].xml marker
+    // Read enough data to find package markers.
     const handle = await fs.open(filePath, 'r')
     try {
-      const buffer = Buffer.alloc(4096)
-      const { bytesRead } = await handle.read(buffer, 0, 4096, 0)
+      const buffer = Buffer.alloc(8192)
+      const { bytesRead } = await handle.read(buffer, 0, 8192, 0)
       const content = buffer.subarray(0, bytesRead).toString('utf8', 0, bytesRead)
 
-      // DOCX files contain [Content_Types].xml at the root
-      if (!content.includes('[Content_Types]') && !content.includes('word/')) {
+      if (!markers.some((marker) => content.includes(marker))) {
         return {
           valid: false,
-          reason: 'ZIP file does not contain DOCX structure (missing [Content_Types].xml or word/ directory)',
+          reason: `ZIP file does not contain expected ${extension.slice(1).toUpperCase()} structure markers`,
         }
       }
 

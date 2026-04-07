@@ -3,9 +3,24 @@
 ## PolyMorph V-1.0.0 (2026-04-06)
 
 ### Release Summary
-- Production-ready core flow for PDF <-> Word conversion with a React frontend and Node.js (Express) backend.
+- Production-ready document-to-PDF flow with React frontend and Node.js (Express) backend.
 - Real backend conversion and real binary download path are now active.
-- Request tracing and validation were hardened to make failures explicit and debuggable.
+- Request tracing, validation, and feature-availability boundaries were hardened to make failures explicit and debuggable.
+
+### Feature Availability Update
+- Stable conversions enabled
+  - Word (.docx) -> PDF
+  - Excel (.xlsx) -> PDF
+  - PowerPoint (.pptx) -> PDF
+- Limited conversion (best effort)
+  - PDF -> Word (.docx)
+  - Warning shown in modal for complex or scanned PDFs.
+- Upcoming features
+  - Image, audio, video, and other non-document conversion cards remain visible but disabled as Coming Soon.
+- Temporary stability boundary
+  - Unstable or partially implemented conversion paths were intentionally disabled until reliability targets are met.
+- UX update
+  - Unsupported cards now use blur and overlay treatment, disable click interaction, and preserve the dark card layout.
 
 ### Progress Completed
 - Frontend

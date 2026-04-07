@@ -26,6 +26,7 @@ const conversionByExtension = {
     to: 'Word',
     outputExtension: '.docx',
     convertToArgs: ['docx:"MS Word 2007 XML"', 'docx'],
+    availability: 'limited',
     allowedMimeTypes: ['application/pdf'],
   },
   '.docx': {
@@ -33,8 +34,33 @@ const conversionByExtension = {
     to: 'PDF',
     outputExtension: '.pdf',
     convertToArgs: ['pdf'],
+    availability: 'supported',
     allowedMimeTypes: [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/octet-stream',
+      'application/zip',
+    ],
+  },
+  '.xlsx': {
+    from: 'Excel',
+    to: 'PDF',
+    outputExtension: '.pdf',
+    convertToArgs: ['pdf'],
+    availability: 'supported',
+    allowedMimeTypes: [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/octet-stream',
+      'application/zip',
+    ],
+  },
+  '.pptx': {
+    from: 'PowerPoint',
+    to: 'PDF',
+    outputExtension: '.pdf',
+    convertToArgs: ['pdf'],
+    availability: 'supported',
+    allowedMimeTypes: [
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       'application/octet-stream',
       'application/zip',
     ],
@@ -177,7 +203,7 @@ const headerMatchesExtension = ({ headerBuffer, extension }) => {
     return headerBuffer.subarray(0, 5).toString('utf8') === '%PDF-'
   }
 
-  if (extension === '.docx') {
+  if (extension === '.docx' || extension === '.xlsx' || extension === '.pptx') {
     return hasZipSignature(headerBuffer)
   }
 
@@ -189,10 +215,7 @@ const getSupportedConversionPlan = ({ fileName, mimeType }) => {
   const conversionPlan = conversionByExtension[inputExtension]
 
   if (!conversionPlan) {
-    throw createHttpError(
-      400,
-      'Unsupported conversion type. Only PDF -> Word and Word -> PDF are allowed.',
-    )
+    throw createHttpError(400, 'This conversion type is not supported yet')
   }
 
   if (

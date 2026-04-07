@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  isInteractiveConversion,
+  isLimitedConversion,
+} from '../data/conversions'
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000').replace(/\/$/, '')
-const SUPPORTED_CONVERSION_IDS = new Set(['pdf-word', 'word-pdf'])
 const CONVERSION_TIMEOUT_MS = 180000
 const DOWNLOAD_TIMEOUT_MS = 60000
 
@@ -69,8 +72,12 @@ function ConverterModal({ conversion, onClose }) {
   const timerRef = useRef(null)
   const inputRef = useRef(null)
 
-  const isSupportedConversion = conversion
-    ? SUPPORTED_CONVERSION_IDS.has(conversion.id)
+  const isInteractive = conversion
+    ? isInteractiveConversion(conversion)
+    : false
+
+  const isLimited = conversion
+    ? isLimitedConversion(conversion)
     : false
 
   useEffect(() => {
@@ -163,8 +170,8 @@ function ConverterModal({ conversion, onClose }) {
       return
     }
 
-    if (!isSupportedConversion) {
-      setConversionError('Only PDF -> Word and Word -> PDF are currently available.')
+    if (!isInteractive) {
+      setConversionError('This conversion type is not supported yet.')
       return
     }
 
@@ -339,10 +346,9 @@ function ConverterModal({ conversion, onClose }) {
             <p className="mt-1 text-sm text-slate-300/80">
               Accepted file types: {conversion.accepts}
             </p>
-            {!isSupportedConversion && (
+            {!isInteractive && (
               <p className="mt-2 text-sm text-amber-200/90">
-                This converter card is UI-only right now. Live backend conversion currently supports
-                PDF -&gt; Word and Word -&gt; PDF.
+                This conversion type is not supported yet.
               </p>
             )}
           </div>
@@ -452,6 +458,13 @@ function ConverterModal({ conversion, onClose }) {
           </p>
         </div>
 
+        {isLimited && (
+          <div className="mt-4 rounded-xl border border-amber-300/35 bg-amber-500/12 p-3 text-sm text-amber-100">
+            {conversion.limitedWarning ||
+              'This conversion works best for simple text-based PDFs. Complex or scanned files may fail.'}
+          </div>
+        )}
+
         {conversionError && (
           <div className="mt-4 rounded-xl border border-rose-300/35 bg-rose-500/10 p-3 text-sm text-rose-100">
             {conversionError}
@@ -462,9 +475,9 @@ function ConverterModal({ conversion, onClose }) {
           <button
             type="button"
             onClick={startConversion}
-            disabled={!selectedFile || isConverting || isConverted || !isSupportedConversion}
+            disabled={!selectedFile || isConverting || isConverted || !isInteractive}
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
-              !selectedFile || isConverting || isConverted || !isSupportedConversion
+              !selectedFile || isConverting || isConverted || !isInteractive
                 ? 'cursor-not-allowed bg-slate-700/70 text-slate-300'
                 : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-slate-950 hover:brightness-110'
             }`}

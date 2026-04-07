@@ -12,6 +12,16 @@ const allowedMimeTypesByExtension = {
     'application/octet-stream',
     'application/zip',
   ],
+  '.xlsx': [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/octet-stream',
+    'application/zip',
+  ],
+  '.pptx': [
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/octet-stream',
+    'application/zip',
+  ],
 }
 
 const storage = multer.diskStorage({
@@ -45,19 +55,19 @@ const fileFilter = (_req, file, callback) => {
   const allowedMimeTypes = allowedMimeTypesByExtension[extension]
 
   if (!allowedMimeTypes) {
-    const error = new Error(
-      'Invalid file extension. Allowed: pdf, docx.',
-    )
+    const error = new Error('This conversion type is not supported yet')
     error.statusCode = 400
+    error.expose = true
     callback(error)
     return
   }
 
   if (!allowedMimeTypes.includes(mimeType)) {
     const error = new Error(
-      'Invalid MIME type for this extension. Allowed: application/pdf and DOCX MIME types.',
+      'Unsupported file MIME type for this conversion type.',
     )
     error.statusCode = 400
+    error.expose = true
     callback(error)
     return
   }

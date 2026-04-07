@@ -1,4 +1,8 @@
 import ConversionCard from './ConversionCard'
+import {
+  isLimitedConversion,
+  isSupportedConversion,
+} from '../data/conversions'
 
 function ConversionGrid({ conversions, onSelectConversion }) {
   if (!conversions.length) {
@@ -15,6 +19,8 @@ function ConversionGrid({ conversions, onSelectConversion }) {
         <ConversionCard
           key={conversion.id}
           conversion={conversion}
+          isSupported={isSupportedConversion(conversion)}
+          isLimited={isLimitedConversion(conversion)}
           onSelect={onSelectConversion}
         />
       ))}

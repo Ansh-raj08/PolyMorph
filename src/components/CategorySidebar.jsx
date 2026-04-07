@@ -2,6 +2,8 @@ const categoryStyles = {
   all: 'from-slate-300/20 to-slate-500/5',
   pdf: 'from-rose-400/20 to-red-500/5',
   word: 'from-blue-400/20 to-sky-500/5',
+  excel: 'from-emerald-400/20 to-green-500/5',
+  powerpoint: 'from-amber-300/20 to-orange-500/5',
   image: 'from-emerald-400/20 to-green-500/5',
   audio: 'from-amber-300/20 to-orange-500/5',
   video: 'from-cyan-300/20 to-indigo-500/5',
