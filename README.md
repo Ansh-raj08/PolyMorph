@@ -134,12 +134,86 @@ Use .env values similar to:
 
 1. Deploy backend as a separate Node service (same repo, backend runtime).
 2. Set backend environment variables:
-	- PORT=4000
 	- NODE_ENV=production
 	- FRONTEND_ORIGIN=https://your-polymorph.vercel.app
+	- CORS_ALLOWED_ORIGINS=https://your-extra-allowed-origin (optional)
 	- FILE_TTL_MS=900000
 	- FILE_CLEANUP_INTERVAL_MS=300000
+	- REQUEST_TIMEOUT_MS=240000
+	- PORT is usually platform-managed (set only if your host requires it)
 3. Ensure LibreOffice is available in the backend runtime.
+
+## Environment Matrix
+
+### Frontend (Vite / Vercel)
+
+| Environment | Variable | Value |
+| --- | --- | --- |
+| Local development | VITE_API_URL | http://localhost:4000 |
+| Vercel Preview | VITE_API_URL | https://your-backend-staging-domain |
+| Vercel Production | VITE_API_URL | https://your-backend-production-domain |
+| Local UI + ngrok backend | VITE_API_URL | https://your-ngrok-subdomain.ngrok-free.app |
+
+### Backend (Railway / Render)
+
+| Environment | Variable | Value |
+| --- | --- | --- |
+| Local development | NODE_ENV | development |
+| Local development | FRONTEND_ORIGIN | http://localhost:5173 |
+| Local development | FILE_TTL_MS | 900000 |
+| Local development | FILE_CLEANUP_INTERVAL_MS | 300000 |
+| Local development | REQUEST_TIMEOUT_MS | 240000 |
+| Staging | NODE_ENV | production |
+| Staging | FRONTEND_ORIGIN | https://your-vercel-preview-domain |
+| Staging | CORS_ALLOWED_ORIGINS | https://your-extra-allowed-origin |
+| Staging | FILE_TTL_MS | 900000 |
+| Staging | FILE_CLEANUP_INTERVAL_MS | 300000 |
+| Staging | REQUEST_TIMEOUT_MS | 240000 |
+| Production | NODE_ENV | production |
+| Production | FRONTEND_ORIGIN | https://your-polymorph.vercel.app |
+| Production | CORS_ALLOWED_ORIGINS | (optional, comma-separated additional origins) |
+| Production | FILE_TTL_MS | 900000 |
+| Production | FILE_CLEANUP_INTERVAL_MS | 300000 |
+| Production | REQUEST_TIMEOUT_MS | 240000 |
+
+Notes:
+- On Railway/Render, PORT is typically injected by the platform. Keep local PORT in your local .env only.
+- Never set VITE_API_URL to localhost for deployed Vercel environments.
+
+### Copy/Paste Presets
+
+Local frontend (.env):
+
+```bash
+VITE_API_URL=http://localhost:4000
+```
+
+Vercel frontend (production):
+
+```bash
+VITE_API_URL=https://your-backend-production-domain
+```
+
+Backend production (Railway/Render):
+
+```bash
+NODE_ENV=production
+FRONTEND_ORIGIN=https://your-polymorph.vercel.app
+FILE_TTL_MS=900000
+FILE_CLEANUP_INTERVAL_MS=300000
+REQUEST_TIMEOUT_MS=240000
+```
+
+Backend staging (Railway/Render):
+
+```bash
+NODE_ENV=production
+FRONTEND_ORIGIN=https://your-vercel-preview-domain
+CORS_ALLOWED_ORIGINS=https://your-team-qa-domain
+FILE_TTL_MS=900000
+FILE_CLEANUP_INTERVAL_MS=300000
+REQUEST_TIMEOUT_MS=240000
+```
 
 ### Local Backend Testing with Ngrok
 
