@@ -67,6 +67,11 @@ function App() {
             </div>
           </section>
         </main>
+
+        <footer className="mt-8 border-t border-slate-200/10 pt-4 text-center text-xs text-slate-300/70 sm:text-sm">
+          <p>Copyright - AnshDevLabs</p>
+          <p className="mt-1">Made by - Ansh</p>
+        </footer>
       </div>
 
       {activeConversion && (
