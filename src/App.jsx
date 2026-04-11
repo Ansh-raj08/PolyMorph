@@ -4,6 +4,7 @@ import ConversionGrid from './components/ConversionGrid'
 import ConverterModal from './components/ConverterModal'
 import DashboardNavbar from './components/DashboardNavbar'
 import FileUploadExample from './components/FileUploadExample'
+import HistoryPanel from './components/HistoryPanel'
 import { conversionCatalog, fileCategories } from './data/conversions'
 
 function App() {
@@ -64,6 +65,10 @@ function App() {
 
             <div className="mt-6">
               <FileUploadExample />
+            </div>
+
+            <div className="mt-6">
+              <HistoryPanel />
             </div>
           </section>
         </main>

@@ -3,6 +3,7 @@ import {
   isInteractiveConversion,
   isLimitedConversion,
 } from '../data/conversions'
+import { saveToHistory } from '../utils/conversionHistory'
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
@@ -61,6 +62,23 @@ const toAbsoluteApiUrl = (relativePath) => {
   }
 
   return `${API_BASE_URL}/${cleanPath}`
+}
+
+const toConversionType = (conversion) => {
+  const from = String(conversion?.from || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+  const to = String(conversion?.to || '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '')
+
+  if (!from || !to) {
+    return 'unknown_to_unknown'
+  }
+
+  return `${from}_to_${to}`
 }
 
 function ConverterModal({ conversion, onClose }) {
@@ -257,9 +275,19 @@ function ConverterModal({ conversion, onClose }) {
 
       setConversionWarnings(warnings)
 
+      const downloadUrl = toAbsoluteApiUrl(convertedFilePayload.filePath)
+
       setConvertedFile({
         ...convertedFilePayload,
-        downloadUrl: toAbsoluteApiUrl(convertedFilePayload.filePath),
+        downloadUrl,
+      })
+
+      saveToHistory({
+        originalName: selectedFile.name,
+        convertedName: convertedFilePayload.fileName,
+        conversionType: toConversionType(conversion),
+        createdAt: new Date().toISOString(),
+        fileUrl: downloadUrl,
       })
 
       console.info('[Frontend] Conversion finished', {
