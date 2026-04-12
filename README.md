@@ -5,7 +5,7 @@ Polymorph – A multi-format file conversion engine.
 File converter web app with a React frontend and Node.js (Express) backend.
 
 Current Version: PolyMorph V-1.0.0
-Last Updated: 2026-04-06
+Last Updated: 2026-04-12
 
 ## Release Notes
 
@@ -17,7 +17,7 @@ Last Updated: 2026-04-06
 - Backend: Node.js, Express, Multer
 - Conversion Engine: LibreOffice CLI (soffice --headless)
 
-## Current Progress (2026-04-06)
+## Current Progress (2026-04-12)
 
 ### Frontend
 
@@ -31,6 +31,9 @@ Last Updated: 2026-04-06
 - Added frontend request timeout and clearer "Load Failed" diagnostics
 - Added environment-based API routing using VITE_API_URL
 - Added clear feature boundaries in UI (Supported, Limited, Coming Soon)
+- Added Recent Conversions panel with localStorage metadata history (last 10)
+- Added history status handling for Success and Expired files
+- Added safe history parsing with fallback for corrupted or unavailable localStorage
 
 ### Backend
 
@@ -93,6 +96,37 @@ Last Updated: 2026-04-06
 - Default retention: 15 minutes
 - Default sweep interval: 5 minutes
 - Configurable via FILE_TTL_MS and FILE_CLEANUP_INTERVAL_MS
+
+### Conversion History (Client-Side)
+
+- Added production-ready local history using localStorage key: conversion_history
+- Stores metadata only (no file bytes):
+	- id
+	- originalName
+	- convertedName
+	- conversionType
+	- createdAt (ISO string)
+	- fileUrl
+	- status (success or expired)
+- Saves entries only after successful conversion responses
+- Keeps only the latest 10 entries (most recent first)
+- Deduplicates repeated entries and handles fast repeated conversions
+- Provides Clear History action to remove all stored metadata
+- Handles edge cases gracefully:
+	- localStorage unavailable
+	- corrupted JSON in localStorage
+	- missing fileUrl
+	- backend network errors
+	- expired output files
+
+### Expired File Handling in History
+
+- Before each history download, frontend sends a HEAD request to the stored fileUrl
+- If file is missing or backend returns non-OK status:
+	- item is marked Expired
+	- Download is disabled
+	- UI message shows: File expired
+- Expiration state is cached in history entries to avoid repeated checks for known expired files
 
 ## Notes
 
