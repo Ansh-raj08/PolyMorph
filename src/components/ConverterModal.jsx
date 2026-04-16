@@ -368,7 +368,7 @@ function ConverterModal({ conversion, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 px-4 py-6 backdrop-blur-sm"
+      className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 px-4 py-6"
       role="dialog"
       aria-modal="true"
       aria-label={`${conversion.from} to ${conversion.to} converter`}

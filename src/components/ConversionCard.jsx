@@ -73,7 +73,7 @@ function ConversionCard({ conversion, onSelect, isSupported, isLimited }) {
       </div>
 
       {!isInteractive && (
-        <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-950/62 backdrop-blur-[1px]">
+        <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-950/62">
           <span className="rounded-full border border-slate-200/20 bg-slate-950/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-slate-200">
             Coming Soon
           </span>

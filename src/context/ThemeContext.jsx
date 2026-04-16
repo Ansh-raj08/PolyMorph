@@ -59,6 +59,7 @@ const getInitialTheme = () => {
 function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(getInitialTheme)
   const hasUserThemeRef = useRef(Boolean(readStoredTheme()))
+  const themeMorphFrameRef = useRef(null)
   const rippleTimeoutRef = useRef(null)
   const switchingTimeoutRef = useRef(null)
 
@@ -76,9 +77,21 @@ function ThemeProvider({ children }) {
 
     root.classList.remove('theme-ripple-active')
     root.classList.remove('theme-switching')
-    void root.offsetWidth
-    root.classList.add('theme-ripple-active')
-    root.classList.add('theme-switching')
+
+    if (themeMorphFrameRef.current !== null && typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(themeMorphFrameRef.current)
+    }
+
+    if (typeof window.requestAnimationFrame === 'function') {
+      themeMorphFrameRef.current = window.requestAnimationFrame(() => {
+        root.classList.add('theme-ripple-active')
+        root.classList.add('theme-switching')
+        themeMorphFrameRef.current = null
+      })
+    } else {
+      root.classList.add('theme-ripple-active')
+      root.classList.add('theme-switching')
+    }
 
     if (rippleTimeoutRef.current) {
       clearTimeout(rippleTimeoutRef.current)
@@ -163,6 +176,14 @@ function ThemeProvider({ children }) {
 
   useEffect(() => {
     return () => {
+      if (
+        themeMorphFrameRef.current !== null &&
+        typeof window !== 'undefined' &&
+        typeof window.cancelAnimationFrame === 'function'
+      ) {
+        window.cancelAnimationFrame(themeMorphFrameRef.current)
+      }
+
       if (rippleTimeoutRef.current) {
         clearTimeout(rippleTimeoutRef.current)
       }
@@ -195,4 +216,4 @@ const useTheme = () => {
   return contextValue
 }
 
-export { ThemeProvider, useTheme, DARK_THEME, LIGHT_THEME }
+export { ThemeProvider, useTheme }

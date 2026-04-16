@@ -5,28 +5,39 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #0f1115;
+  --color-bg: #0b1018;
   --color-surface: rgba(255, 255, 255, 0.05);
-  --color-surface-strong: rgba(19, 25, 36, 0.62);
+  --color-surface-strong: rgba(18, 26, 39, 0.66);
+  --color-surface-solid: #131c2a;
+  --color-surface-solid-alt: #1b283a;
   --color-text-primary: #ffffff;
-  --color-text-secondary: rgba(226, 232, 240, 0.86);
-  --color-text-muted: rgba(203, 213, 225, 0.72);
-  --color-accent: #879cff;
-  --color-accent-soft: rgba(135, 156, 255, 0.32);
-  --color-border-soft: rgba(255, 255, 255, 0.1);
-  --color-border-strong: rgba(148, 163, 184, 0.24);
-  --color-shadow: rgba(2, 8, 23, 0.45);
+  --color-text-secondary: rgba(226, 232, 240, 0.9);
+  --color-text-muted: rgba(203, 213, 225, 0.76);
+  --color-accent: #59b7ff;
+  --color-accent-soft: rgba(89, 183, 255, 0.3);
+  --text-highlight-solid: #92dbff;
+  --text-highlight-gradient-start: #a9ecff;
+  --text-highlight-gradient-end: #63b6ff;
+  --text-highlight-glow: rgba(99, 182, 255, 0.32);
+  --color-border-soft: rgba(148, 163, 184, 0.2);
+  --color-border-strong: rgba(148, 163, 184, 0.34);
+  --color-shadow: rgba(2, 8, 23, 0.58);
   --glass-overlay: linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02));
-  --bg-radial-start: rgba(14, 165, 233, 0.16);
-  --bg-radial-end: rgba(99, 102, 241, 0.14);
-  --bg-linear-start: #070a12;
-  --bg-linear-mid: #0d111c;
-  --bg-linear-end: #131a2a;
-  --ambient-dot-a: rgba(56, 189, 248, 0.28);
-  --ambient-dot-b: rgba(16, 185, 129, 0.18);
-  --ambient-dot-c: rgba(129, 140, 248, 0.2);
+  --bg-radial-start: rgba(34, 211, 238, 0.14);
+  --bg-radial-end: rgba(59, 130, 246, 0.12);
+  --bg-linear-start: #060b12;
+  --bg-linear-mid: #0b1320;
+  --bg-linear-end: #111c2d;
+  --ambient-dot-a: rgba(56, 189, 248, 0.22);
+  --ambient-dot-b: rgba(16, 185, 129, 0.15);
+  --ambient-dot-c: rgba(59, 130, 246, 0.2);
   --theme-ripple-x: 88%;
   --theme-ripple-y: 10%;
+  --motion-fast: 180ms;
+  --motion-base: 320ms;
+  --motion-slow: 520ms;
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-soft: cubic-bezier(0.25, 0.9, 0.32, 1);
   color-scheme: dark;
 }
 
@@ -34,11 +45,17 @@
   --color-bg: #f5f7fa;
   --color-surface: rgba(255, 255, 255, 0.6);
   --color-surface-strong: rgba(255, 255, 255, 0.78);
+  --color-surface-solid: #ffffff;
+  --color-surface-solid-alt: #eef3fa;
   --color-text-primary: #111111;
   --color-text-secondary: rgba(17, 24, 39, 0.8);
   --color-text-muted: rgba(30, 41, 59, 0.62);
   --color-accent: #5f86ff;
   --color-accent-soft: rgba(95, 134, 255, 0.24);
+  --text-highlight-solid: #0f6bb8;
+  --text-highlight-gradient-start: #2a86d9;
+  --text-highlight-gradient-end: #0f5fa8;
+  --text-highlight-glow: rgba(15, 95, 168, 0.18);
   --color-border-soft: rgba(15, 23, 42, 0.12);
   --color-border-strong: rgba(30, 41, 59, 0.2);
   --color-shadow: rgba(15, 23, 42, 0.16);
@@ -75,7 +92,7 @@ body {
   color: var(--color-text-secondary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background 0.45s ease, color 0.4s ease;
+  transition: background var(--motion-slow) var(--ease-soft), color var(--motion-base) var(--ease-standard);
 }
 
 body::before {
@@ -98,7 +115,8 @@ body::after {
   opacity: 0;
   transform: scale(0.88);
   background: radial-gradient(circle at var(--theme-ripple-x) var(--theme-ripple-y), var(--color-accent-soft), transparent 52%);
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transition: opacity var(--motion-slow) var(--ease-soft), transform var(--motion-slow) var(--ease-soft);
+  will-change: opacity, transform;
 }
 
 :root.theme-ripple-active body::after {
@@ -110,11 +128,38 @@ body::after {
   min-height: 100vh;
   position: relative;
   z-index: 1;
-  transition: opacity 0.4s ease;
+  transition: opacity var(--motion-base) var(--ease-standard);
 }
 
 :root.theme-switching #root {
-  opacity: 0.985;
+  opacity: 0.99;
+}
+
+@keyframes ambient-float-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(18px, -14px, 0) scale(1.08);
+  }
+}
+
+@keyframes ambient-float-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-16px, 16px, 0) scale(1.06);
+  }
+}
+
+@keyframes ambient-float-c {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(14px, 10px, 0) scale(1.04);
+  }
 }
 
 @layer components {
@@ -130,35 +175,57 @@ body::after {
     color: var(--color-text-muted);
   }
 
+  .highlight-text {
+    display: inline;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition:
+      color var(--motion-base) var(--ease-standard),
+      text-shadow var(--motion-base) var(--ease-standard),
+      background-position var(--motion-slow) var(--ease-soft);
+  }
+
+  .highlight-text-solid {
+    color: var(--text-highlight-solid);
+  }
+
+  .highlight-text-gradient {
+    color: transparent;
+    background-image: linear-gradient(
+      110deg,
+      var(--text-highlight-gradient-start) 0%,
+      var(--text-highlight-gradient-end) 52%,
+      var(--text-highlight-gradient-start) 100%
+    );
+    background-size: 220% 100%;
+    background-position: 0% 50%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .highlight-text:hover {
+    text-shadow: 0 0 12px var(--text-highlight-glow);
+  }
+
+  .highlight-text-gradient:hover {
+    background-position: 100% 50%;
+  }
+
   .glass-panel {
     position: relative;
     border: 1px solid var(--color-border-soft);
-    background: linear-gradient(160deg, var(--color-surface-strong), var(--color-surface));
-    box-shadow: 0 8px 32px -16px var(--color-shadow);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(158deg, var(--color-surface-solid), var(--color-surface-solid-alt));
+    box-shadow: 0 14px 30px -20px var(--color-shadow);
     overflow: hidden;
   }
 
   .liquid-glass {
     position: relative;
     border: 1px solid var(--color-border-soft);
-    background: linear-gradient(160deg, var(--color-surface-strong), var(--color-surface));
-    box-shadow: 0 8px 32px -16px var(--color-shadow);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(160deg, var(--color-surface-solid), var(--color-surface-solid-alt));
+    box-shadow: 0 14px 28px -20px var(--color-shadow);
     overflow: hidden;
-  }
-
-  .glass-panel::before,
-  .liquid-glass::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: var(--glass-overlay);
-    opacity: 0.65;
-    mix-blend-mode: screen;
   }
 
   .card-glow {
@@ -172,16 +239,21 @@ body::after {
     overflow: hidden;
     border-radius: 1rem;
     border: 1px solid var(--color-border-soft);
-    background: linear-gradient(165deg, var(--color-surface-strong), var(--color-surface));
+    background: linear-gradient(165deg, var(--color-surface-solid), var(--color-surface-solid-alt));
     padding: 1.25rem;
     text-align: left;
-    transition: transform 0.3s ease, border-color 0.35s ease, box-shadow 0.35s ease, background-color 0.35s ease;
+    transition:
+      transform var(--motion-base) var(--ease-standard),
+      border-color var(--motion-base) var(--ease-standard),
+      box-shadow var(--motion-base) var(--ease-standard),
+      background-color var(--motion-base) var(--ease-standard);
+    will-change: transform;
   }
 
   .card-shell:hover {
     transform: translateY(-4px);
     border-color: color-mix(in srgb, var(--color-accent) 52%, transparent);
-    background: linear-gradient(165deg, color-mix(in srgb, var(--color-surface-strong) 82%, var(--color-accent) 18%), var(--color-surface));
+    background: linear-gradient(165deg, color-mix(in srgb, var(--color-surface-solid) 86%, var(--color-accent) 14%), var(--color-surface-solid-alt));
     box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent),
       0 24px 40px -28px color-mix(in srgb, var(--color-accent) 52%, transparent);
@@ -190,7 +262,7 @@ body::after {
   .card-shell-disabled:hover {
     transform: translateY(0);
     border-color: var(--color-border-soft);
-    background: linear-gradient(165deg, var(--color-surface-strong), var(--color-surface));
+    background: linear-gradient(165deg, var(--color-surface-solid), var(--color-surface-solid-alt));
     box-shadow:
       inset 0 0 0 1px var(--color-border-soft),
       0 12px 26px -22px var(--color-shadow);
@@ -199,15 +271,16 @@ body::after {
   .liquid-button {
     border: 1px solid var(--color-border-soft);
     color: var(--color-text-primary);
-    background: color-mix(in srgb, var(--color-surface-strong) 86%, transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: border-color 0.35s ease, background-color 0.35s ease, transform 0.3s ease;
+    background: color-mix(in srgb, var(--color-surface-solid) 88%, var(--color-surface-solid-alt) 12%);
+    transition:
+      border-color var(--motion-base) var(--ease-standard),
+      background-color var(--motion-base) var(--ease-standard),
+      transform var(--motion-base) var(--ease-standard);
   }
 
   .liquid-button:hover {
     border-color: color-mix(in srgb, var(--color-accent) 42%, var(--color-border-soft));
-    background: color-mix(in srgb, var(--color-surface-strong) 70%, var(--color-accent) 30%);
+    background: color-mix(in srgb, var(--color-surface-solid) 76%, var(--color-accent) 24%);
     transform: translateY(-1px);
   }
 
@@ -216,7 +289,10 @@ body::after {
     color: #f8fbff;
     background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 76%, #7dd3fc 24%), color-mix(in srgb, var(--color-accent) 62%, #60a5fa 38%));
     box-shadow: 0 12px 26px -18px color-mix(in srgb, var(--color-accent) 65%, transparent);
-    transition: transform 0.3s ease, box-shadow 0.35s ease, filter 0.35s ease;
+    transition:
+      transform var(--motion-base) var(--ease-standard),
+      box-shadow var(--motion-base) var(--ease-standard),
+      filter var(--motion-base) var(--ease-standard);
   }
 
   .liquid-button-primary:hover {
@@ -247,7 +323,11 @@ body::after {
       inset 0 1px 0 rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    transition: transform 0.3s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    transition:
+      transform var(--motion-base) var(--ease-standard),
+      border-color var(--motion-base) var(--ease-standard),
+      box-shadow var(--motion-base) var(--ease-standard);
+    will-change: transform;
   }
 
   .theme-toggle:hover {
@@ -266,7 +346,10 @@ body::after {
     justify-content: center;
     width: 1.05rem;
     height: 1.05rem;
-    transition: opacity 0.34s ease, transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+    transition:
+      opacity var(--motion-base) var(--ease-standard),
+      transform calc(var(--motion-base) + 90ms) var(--ease-standard);
+    will-change: opacity, transform;
   }
 
   .theme-toggle-icon svg {
@@ -297,19 +380,23 @@ body::after {
     position: absolute;
     border-radius: 9999px;
     filter: blur(52px);
-    transition: background-color 0.45s ease, opacity 0.45s ease;
+    transition: background-color var(--motion-slow) var(--ease-soft), opacity var(--motion-slow) var(--ease-soft);
+    will-change: transform, opacity;
   }
 
   .ambient-dot-a {
     background: var(--ambient-dot-a);
+    animation: ambient-float-a 16s var(--ease-soft) infinite alternate;
   }
 
   .ambient-dot-b {
     background: var(--ambient-dot-b);
+    animation: ambient-float-b 18s var(--ease-soft) infinite alternate;
   }
 
   .ambient-dot-c {
     background: var(--ambient-dot-c);
+    animation: ambient-float-c 20s var(--ease-soft) infinite alternate;
   }
 
   :focus-visible {
@@ -326,11 +413,20 @@ select,
 .liquid-glass,
 .card-shell {
   transition:
-    background-color 0.4s ease,
-    border-color 0.4s ease,
-    color 0.35s ease,
-    box-shadow 0.4s ease,
-    transform 0.3s ease;
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard),
+    color var(--motion-base) var(--ease-standard),
+    box-shadow var(--motion-base) var(--ease-standard),
+    transform var(--motion-base) var(--ease-standard);
+}
+
+.transition,
+.transition-all,
+.transition-colors,
+.transition-opacity,
+.transition-transform {
+  transition-timing-function: var(--ease-standard);
+  transition-duration: var(--motion-base);
 }
 
 :root[data-theme='light'] [class*='text-slate-100'],
@@ -358,7 +454,15 @@ select,
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .ambient-dot-a,
+  .ambient-dot-b,
+  .ambient-dot-c {
+    animation: none !important;
+    transform: none !important;
   }
 }

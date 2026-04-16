@@ -1,4 +1,5 @@
-function GlassCard({ as: Component = 'div', className = '', children, ...props }) {
+function GlassCard({ as: asElement = 'div', className = '', children, ...props }) {
+  const Component = asElement
   const combinedClassName = ['liquid-glass', className].filter(Boolean).join(' ')
 
   return (

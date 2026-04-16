@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import HighlightText from './HighlightText'
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || ''
@@ -58,7 +59,10 @@ function FileUploadExample() {
 
   return (
     <section className="glass-panel rounded-2xl p-5">
-      <h3 className="font-display text-xl text-slate-100">Upload Demo</h3>
+      <h3 className="font-display text-xl text-slate-100">
+        <HighlightText variant="gradient">Fast</HighlightText> and{' '}
+        <HighlightText>Secure</HighlightText> Upload
+      </h3>
       <p className="mt-1 text-sm text-slate-300/80">
         Sends a single file to the Express /upload endpoint using FormData.
       </p>

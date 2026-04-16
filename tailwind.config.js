@@ -12,12 +12,12 @@ export default {
           '0 24px 60px -30px rgba(8, 145, 178, 0.55), 0 0 0 1px rgba(148, 163, 184, 0.14)',
       },
       animation: {
-        rise: 'rise 420ms ease-out',
+        rise: 'rise 560ms cubic-bezier(0.22, 1, 0.36, 1)',
       },
       keyframes: {
         rise: {
-          '0%': { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translate3d(0, 14px, 0) scale(0.992)' },
+          '100%': { opacity: '1', transform: 'translate3d(0, 0, 0) scale(1)' },
         },
       },
     },

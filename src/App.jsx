@@ -5,6 +5,7 @@ import ConverterModal from './components/ConverterModal'
 import DashboardNavbar from './components/DashboardNavbar'
 import FileUploadExample from './components/FileUploadExample'
 import GlassCard from './components/GlassCard'
+import HighlightText from './components/HighlightText'
 import HistoryPanel from './components/HistoryPanel'
 import { conversionCatalog, fileCategories } from './data/conversions'
 
@@ -46,10 +47,12 @@ function App() {
                   Workspace
                 </p>
                 <h1 className="text-theme-primary mt-2 font-display text-2xl font-semibold sm:text-3xl">
-                  Convert files in one clean flow
+                  <HighlightText variant="gradient">Convert</HighlightText> your{' '}
+                  <HighlightText>Files</HighlightText> in one clean flow
                 </h1>
                 <p className="text-theme-secondary mt-2 max-w-2xl text-sm sm:text-base">
-                  Pick a conversion card, upload your file, and export in the
+                  Pick a conversion card, <HighlightText>Upload</HighlightText>{' '}
+                  your file, and <HighlightText>Download</HighlightText> it in the
                   new format with live progress feedback.
                 </p>
               </div>
