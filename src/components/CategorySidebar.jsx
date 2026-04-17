@@ -1,12 +1,12 @@
 const categoryStyles = {
-  all: 'from-slate-300/20 to-slate-500/5',
-  pdf: 'from-rose-400/20 to-red-500/5',
-  word: 'from-blue-400/20 to-sky-500/5',
-  excel: 'from-emerald-400/20 to-green-500/5',
-  powerpoint: 'from-amber-300/20 to-orange-500/5',
-  image: 'from-emerald-400/20 to-green-500/5',
-  audio: 'from-amber-300/20 to-orange-500/5',
-  video: 'from-cyan-300/20 to-indigo-500/5',
+  all: 'from-[#B7BDF7]/20 to-[#5F7096]/8',
+  pdf: 'from-[#FF7447]/20 to-[#B7BDF7]/8',
+  word: 'from-[#B7BDF7]/24 to-[#5F7096]/10',
+  excel: 'from-[#E6DFC9]/22 to-[#B7BDF7]/10',
+  powerpoint: 'from-[#FF7447]/24 to-[#E6DFC9]/10',
+  image: 'from-[#B7BDF7]/20 to-[#E6DFC9]/10',
+  audio: 'from-[#FF7447]/20 to-[#5F7096]/10',
+  video: 'from-[#5F7096]/24 to-[#B7BDF7]/10',
 }
 
 function CategorySidebar({
@@ -42,7 +42,7 @@ function CategorySidebar({
               onClick={() => onSelectCategory(category.id)}
               className={`group relative overflow-hidden rounded-xl border px-3 py-2.5 text-left transition ${
                 isActive
-                  ? 'border-cyan-300/40 bg-slate-800/80'
+                  ? 'sidebar-item-active'
                   : 'border-slate-200/10 bg-slate-900/40 hover:border-slate-200/30 hover:bg-slate-800/65'
               }`}
             >

@@ -81,7 +81,7 @@ function FileUploadExample() {
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
             isUploading
               ? 'cursor-not-allowed bg-slate-700 text-slate-300'
-              : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-slate-950 hover:brightness-110'
+              : 'liquid-button-primary'
           }`}
         >
           {isUploading ? 'Uploading...' : 'Upload File'}

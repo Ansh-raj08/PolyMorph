@@ -383,7 +383,7 @@ function ConverterModal({ conversion, onClose }) {
       <section className="glass-panel animate-rise relative z-10 w-full max-w-2xl rounded-3xl border border-slate-200/10 bg-slate-900/95 p-5 sm:p-6">
         <header className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-cyan-300/90">
+            <p className="text-brand-accent-soft text-xs uppercase tracking-[0.24em]">
               Active Converter
             </p>
             <h3 className="mt-2 font-display text-2xl text-slate-100">
@@ -393,7 +393,7 @@ function ConverterModal({ conversion, onClose }) {
               Accepted file types: {conversion.accepts}
             </p>
             {!isInteractive && (
-              <p className="mt-2 text-sm text-amber-200/90">
+              <p className="text-brand-accent-soft mt-2 text-sm">
                 This conversion type is not supported yet.
               </p>
             )}
@@ -411,7 +411,7 @@ function ConverterModal({ conversion, onClose }) {
         <div
           className={`mt-5 rounded-2xl border-2 border-dashed p-6 text-center transition ${
             dragActive
-              ? 'border-cyan-300/70 bg-cyan-400/10'
+              ? 'brand-drag-active'
               : 'border-slate-300/20 bg-slate-900/50'
           }`}
           onDragOver={handleDragOver}
@@ -436,7 +436,7 @@ function ConverterModal({ conversion, onClose }) {
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="mt-4 rounded-xl border border-cyan-300/35 bg-cyan-400/10 px-4 py-2 text-sm font-semibold text-cyan-100 transition hover:bg-cyan-400/20"
+            className="brand-outline-button mt-4 rounded-xl px-4 py-2 text-sm font-semibold transition"
           >
             {selectedFile ? 'Choose another file' : 'Browse file'}
           </button>
@@ -464,7 +464,7 @@ function ConverterModal({ conversion, onClose }) {
                     : isConverted
                     ? 'border border-emerald-300/35 bg-emerald-400/15 text-emerald-100'
                     : isConverting
-                      ? 'border border-cyan-300/35 bg-cyan-400/15 text-cyan-100'
+                      ? 'badge-converting'
                       : 'border border-slate-300/25 bg-slate-400/10 text-slate-300'
                 }`}
               >
@@ -488,7 +488,7 @@ function ConverterModal({ conversion, onClose }) {
 
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-cyan-300 to-blue-500 transition-all duration-300"
+              className="brand-progress-fill h-full rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -505,14 +505,14 @@ function ConverterModal({ conversion, onClose }) {
         </div>
 
         {isLimited && (
-          <div className="mt-4 rounded-xl border border-amber-300/35 bg-amber-500/12 p-3 text-sm text-amber-100">
+          <div className="brand-note mt-4 rounded-xl p-3 text-sm">
             {conversion.limitedWarning ||
               'This conversion works best for simple text-based PDFs. Complex or scanned files may fail.'}
           </div>
         )}
 
         {conversionWarnings.length > 0 && (
-          <div className="mt-4 rounded-xl border border-amber-300/35 bg-amber-500/10 p-3 text-sm text-amber-100">
+          <div className="brand-note mt-4 rounded-xl p-3 text-sm">
             <p className="font-semibold">Warnings</p>
             <ul className="mt-1 list-disc pl-5">
               {conversionWarnings.map((warning) => (
@@ -536,7 +536,7 @@ function ConverterModal({ conversion, onClose }) {
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
               !selectedFile || isConverting || isConverted || !isInteractive
                 ? 'cursor-not-allowed bg-slate-700/70 text-slate-300'
-                : 'bg-gradient-to-r from-cyan-300 to-blue-500 text-slate-950 hover:brightness-110'
+                : 'liquid-button-primary'
             }`}
           >
             {isConverting ? 'Converting...' : isConverted ? 'Converted' : 'Convert'}

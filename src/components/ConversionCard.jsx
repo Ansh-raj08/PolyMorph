@@ -1,11 +1,11 @@
 const cardTones = {
-  pdf: 'from-rose-500/20 via-red-500/10 to-transparent',
-  word: 'from-blue-500/20 via-sky-500/10 to-transparent',
-  excel: 'from-emerald-500/20 via-green-500/10 to-transparent',
-  powerpoint: 'from-orange-500/20 via-amber-500/10 to-transparent',
-  image: 'from-emerald-500/20 via-green-500/10 to-transparent',
-  audio: 'from-amber-500/20 via-orange-500/10 to-transparent',
-  video: 'from-cyan-500/20 via-indigo-500/10 to-transparent',
+  pdf: 'from-[#FF7447]/22 via-[#B7BDF7]/10 to-transparent',
+  word: 'from-[#B7BDF7]/24 via-[#5F7096]/12 to-transparent',
+  excel: 'from-[#E6DFC9]/22 via-[#B7BDF7]/12 to-transparent',
+  powerpoint: 'from-[#FF7447]/24 via-[#E6DFC9]/10 to-transparent',
+  image: 'from-[#B7BDF7]/20 via-[#E6DFC9]/10 to-transparent',
+  audio: 'from-[#FF7447]/18 via-[#5F7096]/10 to-transparent',
+  video: 'from-[#5F7096]/22 via-[#B7BDF7]/12 to-transparent',
 }
 
 function ConversionCard({ conversion, onSelect, isSupported, isLimited }) {
@@ -44,12 +44,12 @@ function ConversionCard({ conversion, onSelect, isSupported, isLimited }) {
               {conversion.category}
             </span>
             {isLimited && (
-              <span className="rounded-full border border-amber-300/35 bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-100">
+              <span className="badge-limited rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em]">
                 Limited
               </span>
             )}
           </div>
-          <span className="text-xs text-slate-400 transition group-hover:text-cyan-200/90">
+          <span className="conversion-card-hint text-xs text-slate-400">
             {isSupported
               ? 'Click to convert'
               : isLimited
@@ -60,7 +60,7 @@ function ConversionCard({ conversion, onSelect, isSupported, isLimited }) {
 
         <div>
           <p className="font-display text-xl font-semibold text-slate-100">
-            {conversion.from} <span className="text-cyan-300">-&gt;</span>{' '}
+            {conversion.from} <span className="text-brand-accent">-&gt;</span>{' '}
             {conversion.to}
           </p>
           <p className="mt-2 text-sm text-slate-300/85">{conversion.description}</p>

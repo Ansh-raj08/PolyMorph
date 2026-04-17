@@ -243,7 +243,7 @@ function HistoryPanel() {
             return (
               <li
                 key={entry.id}
-                className="rounded-xl border border-slate-200/15 bg-slate-950/45 p-4 transition duration-300 hover:border-cyan-300/30 hover:bg-slate-900/60"
+                className="history-item rounded-xl border border-slate-200/15 bg-slate-950/45 p-4 transition duration-300"
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">

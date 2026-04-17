@@ -43,7 +43,7 @@ function App() {
           <GlassCard as="section" className="animate-rise rounded-3xl p-5 sm:p-6">
             <header className="flex flex-col gap-3 border-b border-slate-200/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-cyan-300/80">
+                <p className="text-brand-accent-soft text-xs uppercase tracking-[0.28em]">
                   Workspace
                 </p>
                 <h1 className="text-theme-primary mt-2 font-display text-2xl font-semibold sm:text-3xl">
@@ -57,7 +57,7 @@ function App() {
                 </p>
               </div>
 
-              <div className="inline-flex items-center rounded-full border border-cyan-300/35 bg-cyan-400/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200">
+              <div className="brand-pill inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]">
                 {filteredConversions.length} tools
               </div>
             </header>
